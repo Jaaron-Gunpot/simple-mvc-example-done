@@ -248,6 +248,58 @@ const makeDog = async (req, res) => {
   }
 };
 
+const updateDogAge = async (req, res) => {
+  if (!req.body.name) {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+
+  //find the dog by name
+  let doc;
+  try {
+    /* Just like Cat.find() in hostPage1() above, Mongoose models also have a .findOne()
+       that will find a single document in the database that matches the search parameters.
+       This function is faster, as it will stop searching after it finds one document that
+       matches the parameters. The downside is you cannot get multiple responses with it.
+
+       One of three things will occur when trying to findOne in the database.
+        1) An error will be thrown, which will stop execution of the try block and move to
+            the catch block.
+        2) Everything works, but the name was not found in the database returning an empty
+            doc object.
+        3) Everything works, and an object matching the search is found.
+    */
+    doc = await Dog.findOne({ name: req.body.name }).exec();
+  } catch (err) {
+    // If there is an error, log it and send the user an error message.
+    console.log(err);
+    return res.status(500).json({ error: 'Something went wrong' });
+  }
+
+  // If we do not find something that matches our search, doc will be empty.
+  if (!doc) {
+    return res.status(404).json({ error: 'No dogs found' });
+  }
+
+  // Otherwise, we got a result
+  //update that dogs age
+  const dogPromise = doc.updateOne({ $inc: { age: 1 } }, {
+    returnDocument: 'after', // Populates doc in the .then() with the version after update
+  }).lean().exec();
+
+  // If we successfully save/update them in the database, send back the cat's info.
+  dogPromise.then((doc) => res.json({
+    name: doc.name,
+    breed: doc.breed,
+    age: doc.age,
+  }));
+
+  // If something goes wrong saving to the database, log the error and send a message to the client.
+  dogPromise.catch((err) => {
+    console.log(err);
+    return res.status(500).json({ error: 'Something went wrong' });
+  });
+};
+
 // Function to handle searching a cat by name.
 const searchName = async (req, res) => {
   /* When the user makes a POST request, bodyParser populates req.body with the parameters
@@ -358,4 +410,5 @@ module.exports = {
   searchName,
   notFound,
   makeDog,
+  updateDogAge,
 };
