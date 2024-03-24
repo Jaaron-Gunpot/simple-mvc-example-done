@@ -263,7 +263,7 @@ const updateDogAge = async (req, res) => {
     return res.status(400).json({ error: 'Name is required' });
   }
 
-  //find the dog by name
+  // find the dog by name
   let doc;
   try {
     /* Just like Cat.find() in hostPage1() above, Mongoose models also have a .findOne()
@@ -291,17 +291,17 @@ const updateDogAge = async (req, res) => {
   }
 
   // Otherwise, we got a result
-  //update that dogs age
+  // update that dogs age
   const updatePromise = Dog.findOneAndUpdate(doc, { $inc: { age: 1 } }, {
     returnDocument: 'after', // Populates doc in the .then() with the version after update
     sort: { createdDate: 'descending' },
   }).lean().exec();
 
   // If we successfully save/update them in the database, send back the cat's info.
-  updatePromise.then((doc) => res.json({
-    name: doc.name,
-    breed: doc.breed,
-    age: doc.age,
+  updatePromise.then((incDog) => res.json({
+    name: incDog.name,
+    breed: incDog.breed,
+    age: incDog.age,
   }));
 
   // If something goes wrong saving to the database, log the error and send a message to the client.
@@ -309,6 +309,10 @@ const updateDogAge = async (req, res) => {
     console.log(err);
     return res.status(500).json({ error: 'Something went wrong' });
   });
+
+  // If we got here without returning, something went wrong
+  // Just to appease ESlint
+  return res.json({ name: doc.name, breed: doc.breed, age: doc.age });
 };
 
 // Function to handle searching a cat by name.
