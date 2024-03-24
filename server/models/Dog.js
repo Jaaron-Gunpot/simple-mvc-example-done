@@ -41,13 +41,25 @@ let DogModel = {};
    function and return the current date.
 */
 const DogSchema = new mongoose.Schema({
-    name: String,
-    breed: String,
-    age: Number,
-    createdDate: {
-        type: Date,
-        default: Date.now,
-    },
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  breed: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  age: {
+    type: Number,
+    min: 0,
+    required: true,
+  },
+  createdDate: {
+    type: Date,
+    default: Date.now,
+  },
 });
 // Create the cat model based on the schema. You provide it with a custom discriminator
 // (the name of the object type. Can be anything)
