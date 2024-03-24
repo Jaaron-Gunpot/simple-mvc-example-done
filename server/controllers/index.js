@@ -187,6 +187,67 @@ const setName = async (req, res) => {
   }
 };
 
+// Function to create a new cat in the database
+const makeDog = async (req, res) => {
+  /* If we look at views/page2.handlebars, the form has inputs for a firstname, lastname
+     and a number of beds. When this POST request is sent to us, the bodyParser plugin
+     we configured in app.js will store that information in req.body for us.
+  */
+  if (!req.body.name || !req.body.breed || !req.body.age) {
+    // If they are missing data, send back an error.
+    return res.status(400).json({ error: 'name, breed and age are all required' });
+  }
+
+  /* If they did send all the data, we want to create a cat and add it to our database.
+     We begin by creating a cat that matches the format of our Cat schema. In this case,
+     we define a name and bedsOwned. We don't need to define the createdDate, because the
+     default Date.now function will populate that value for us later.
+  */
+  const dogData = {
+    name: req.body.name,
+    breed: req.body.breed,
+    age: req.body.age,
+  };
+
+  /* Once we have our cat object set up. We want to turn it into something the database
+     can understand. To do this, we create a new instance of a Cat using the Cat model
+     exported from the Models folder.
+
+     Note that this does NOT store the cat in the database. That is the next step.
+  */
+  const newDog = new Dog(dogData);
+
+  /* We have now setup a cat in the right format. We now want to store it in the database.
+     Again, because the database and node server are separate things entirely we have no
+     way of being sure the database will work or respond. Because of that, we wrap our code
+     in a try/catch.
+  */
+  try {
+    /* newCat is a version of our catData that is database-friendly. If you print it, you will
+       see it has extra information attached to it other than name and bedsOwned. One thing it
+       now has is a .save() function. This function will intelligently add or update the cat in
+       the database. Since we have never saved this cat before, .save() will create a new cat in
+       the database. All calls to the database are async, including .save() so we will await the
+       databases response. If something goes wrong, we will end up in our catch() statement. If
+       not, we will return a 201 to the user with the cat info.
+    */
+    await newDog.save();
+    return res.status(201).json({
+      name: newDog.name,
+      breed: newDog.breed,
+      age: newDog.age,
+    });
+  } catch (err) {
+    /* If something goes wrong while communicating with the database, log the error and send
+       an error message back to the client. Note that our return will return us from the setName
+       function, not just the catch statement. That means we can treat the code below the catch
+       as being our "if the try worked"
+    */
+    console.log(err);
+    return res.status(500).json({ error: 'failed to create dog' });
+  }
+};
+
 // Function to handle searching a cat by name.
 const searchName = async (req, res) => {
   /* When the user makes a POST request, bodyParser populates req.body with the parameters
@@ -296,4 +357,5 @@ module.exports = {
   updateLast,
   searchName,
   notFound,
+  makeDog,
 };
