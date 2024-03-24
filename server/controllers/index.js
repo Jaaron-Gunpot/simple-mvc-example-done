@@ -282,22 +282,6 @@ const updateDogAge = async (req, res) => {
 
   // Otherwise, we got a result
   //update that dogs age
-  const dogPromise = doc.updateOne({ $inc: { age: 1 } }, {
-    returnDocument: 'after', // Populates doc in the .then() with the version after update
-  }).lean().exec();
-
-  // If we successfully save/update them in the database, send back the cat's info.
-  dogPromise.then((doc) => res.json({
-    name: doc.name,
-    breed: doc.breed,
-    age: doc.age,
-  }));
-
-  // If something goes wrong saving to the database, log the error and send a message to the client.
-  dogPromise.catch((err) => {
-    console.log(err);
-    return res.status(500).json({ error: 'Something went wrong' });
-  });
 };
 
 // Function to handle searching a cat by name.
