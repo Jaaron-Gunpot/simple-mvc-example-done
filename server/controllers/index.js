@@ -282,6 +282,23 @@ const updateDogAge = async (req, res) => {
 
   // Otherwise, we got a result
   //update that dogs age
+  const updatePromise = Dog.findOneAndUpdate(doc, { $inc: { age: 1 } }, {
+    returnDocument: 'after', // Populates doc in the .then() with the version after update
+    sort: { createdDate: 'descending' },
+  }).lean().exec();
+
+  // If we successfully save/update them in the database, send back the cat's info.
+  updatePromise.then((doc) => res.json({
+    name: doc.name,
+    breed: doc.breed,
+    age: doc.age,
+  }));
+
+  // If something goes wrong saving to the database, log the error and send a message to the client.
+  updatePromise.catch((err) => {
+    console.log(err);
+    return res.status(500).json({ error: 'Something went wrong' });
+  });
 };
 
 // Function to handle searching a cat by name.
